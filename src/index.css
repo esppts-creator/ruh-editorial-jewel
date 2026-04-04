@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Jost:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,68 +6,69 @@
 
 @layer base {
   :root {
-    --background: 40 25% 95%;
-    --foreground: 0 0% 10%;
+    --background: 37 45% 93%;
+    --foreground: 240 3% 11%;
 
-    --card: 40 20% 97%;
-    --card-foreground: 0 0% 10%;
+    --card: 36 24% 88%;
+    --card-foreground: 240 3% 11%;
 
-    --popover: 40 20% 97%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 3% 11%;
 
-    --primary: 155 60% 15%;
-    --primary-foreground: 40 25% 95%;
+    --primary: 158 62% 15%;
+    --primary-foreground: 37 45% 93%;
 
-    --secondary: 40 25% 95%;
-    --secondary-foreground: 155 60% 15%;
+    --secondary: 37 45% 93%;
+    --secondary-foreground: 158 62% 15%;
 
-    --muted: 40 15% 90%;
-    --muted-foreground: 0 0% 42%;
+    --muted: 36 24% 88%;
+    --muted-foreground: 240 3% 45%;
 
-    --accent: 35 45% 60%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 46 53% 54%;
+    --accent-foreground: 240 3% 11%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 85%;
-    --input: 40 15% 85%;
-    --ring: 155 60% 15%;
+    --border: 36 24% 82%;
+    --input: 36 24% 82%;
+    --ring: 158 62% 15%;
 
-    --radius: 0.5rem;
+    --radius: 0rem;
 
-    /* Custom brand tokens */
-    --brand-green: 155 60% 15%;
-    --brand-cream: 40 25% 95%;
-    --brand-gold: 35 45% 60%;
-    --brand-dark: 0 0% 10%;
-    --brand-muted: 0 0% 42%;
+    /* RUH Brand Tokens */
+    --ruh-forest: 158 62% 15%;
+    --ruh-cream: 37 45% 93%;
+    --ruh-gold: 46 53% 54%;
+    --ruh-charcoal: 240 3% 11%;
+    --ruh-mist: 36 24% 88%;
+    --ruh-copper: 25 76% 31%;
 
     --font-heading: 'Playfair Display', Georgia, serif;
-    --font-body: 'Inter', system-ui, sans-serif;
+    --font-body: 'Jost', system-ui, sans-serif;
 
-    --shadow-product: 0 4px 20px -4px hsl(0 0% 0% / 0.08);
-    --shadow-hover: 0 8px 30px -4px hsl(0 0% 0% / 0.12);
+    --shadow-product: 0 4px 20px -4px hsl(0 0% 0% / 0.06);
+    --shadow-hover: 0 8px 30px -4px hsl(0 0% 0% / 0.1);
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 40 25% 95%;
-    --card: 0 0% 8%;
-    --card-foreground: 40 25% 95%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 40 25% 95%;
-    --primary: 35 45% 60%;
-    --primary-foreground: 0 0% 6%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 40 25% 95%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 155 60% 15%;
-    --accent-foreground: 40 25% 95%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 35 45% 60%;
+    --background: 240 3% 6%;
+    --foreground: 37 45% 93%;
+    --card: 240 3% 8%;
+    --card-foreground: 37 45% 93%;
+    --popover: 240 3% 8%;
+    --popover-foreground: 37 45% 93%;
+    --primary: 46 53% 54%;
+    --primary-foreground: 240 3% 6%;
+    --secondary: 240 3% 12%;
+    --secondary-foreground: 37 45% 93%;
+    --muted: 240 3% 15%;
+    --muted-foreground: 240 3% 60%;
+    --accent: 158 62% 15%;
+    --accent-foreground: 37 45% 93%;
+    --border: 240 3% 18%;
+    --input: 240 3% 18%;
+    --ring: 46 53% 54%;
   }
 }
 
@@ -79,6 +80,10 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -92,5 +97,25 @@
   }
   .font-body {
     font-family: var(--font-body);
+  }
+}
+
+@layer components {
+  .ruh-label {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 400;
+  }
+
+  .ruh-marquee {
+    display: flex;
+    animation: marquee 20s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 }

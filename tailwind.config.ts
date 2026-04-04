@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         heading: ['Playfair Display', 'Georgia', 'serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
+        body: ['Jost', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,12 +51,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        brand: {
-          green: "hsl(var(--brand-green))",
-          cream: "hsl(var(--brand-cream))",
-          gold: "hsl(var(--brand-gold))",
-          dark: "hsl(var(--brand-dark))",
-          muted: "hsl(var(--brand-muted))",
+        ruh: {
+          forest: "hsl(var(--ruh-forest))",
+          cream: "hsl(var(--ruh-cream))",
+          gold: "hsl(var(--ruh-gold))",
+          charcoal: "hsl(var(--ruh-charcoal))",
+          mist: "hsl(var(--ruh-mist))",
+          copper: "hsl(var(--ruh-copper))",
         },
       },
       boxShadow: {
@@ -81,11 +82,16 @@ export default {
           from: { opacity: "0", transform: "translateY(20px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(30px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        "accordion-down": "accordion-down 0.4s ease-out",
+        "accordion-up": "accordion-up 0.4s ease-out",
         "fade-in": "fade-in 0.6s ease-out forwards",
+        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
       },
     },
   },
