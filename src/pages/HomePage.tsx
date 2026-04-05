@@ -355,7 +355,7 @@ export default function HomePage() {
       <ProductGrid />
       <BrandStory />
       <SocialProof />
-      <InstagramStrip />
+      <InstagramGallery />
       <Newsletter />
     </main>
   );
