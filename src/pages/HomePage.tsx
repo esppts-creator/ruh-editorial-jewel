@@ -213,25 +213,113 @@ function SocialProof() {
   );
 }
 
-function InstagramStrip() {
-  const igImages = [
-    "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80&auto=format",
-    "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80&auto=format",
-    "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&q=80&auto=format",
-    "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&q=80&auto=format",
-    "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=400&q=80&auto=format",
-    "https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=400&q=80&auto=format",
+function InstagramGallery() {
+  const igPosts = [
+    { img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80&auto=format", likes: "2,847", caption: "The Adiva Forest Ring in its element ✦" },
+    { img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80&auto=format", likes: "3,120", caption: "Handcrafted with intention 🤎" },
+    { img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80&auto=format", likes: "1,956", caption: "Nilam Drops — worn by @priyam" },
+    { img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80&auto=format", likes: "4,203", caption: "Behind the craft — MP artisan workshop" },
+    { img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&q=80&auto=format", likes: "2,541", caption: "Stack your story ✦ Prithvi Band" },
+    { img: "https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=600&q=80&auto=format", likes: "1,782", caption: "Gond-inspired textures up close" },
+    { img: "https://images.unsplash.com/photo-1515562141589-67f0d569b6fc?w=600&q=80&auto=format", likes: "3,450", caption: "New arrivals — Vana Statement Ring" },
+    { img: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&q=80&auto=format", likes: "2,190", caption: "Earthy tones, timeless craft 🌿" },
   ];
+
   return (
-    <section>
-      <div className="text-center mb-8"><h2 className="font-heading italic text-xl text-ruh-forest">@ruh.byruhi</h2><p className="font-body font-light text-[0.7rem] uppercase text-ruh-charcoal/60 mt-1">Follow our world</p></div>
-      <div className="grid grid-cols-3 md:grid-cols-6">
-        {igImages.map((img, i) => (
-          <a key={i} href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="relative aspect-square overflow-hidden group">
-            <img src={img} alt="Instagram" loading="lazy" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-ruh-forest/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"><Instagram size={24} className="text-ruh-cream" /></div>
-          </a>
-        ))}
+    <section className="py-14 md:py-20">
+      {/* Header */}
+      <div className="text-center mb-6 md:mb-10 px-4">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <p className="font-body text-[0.6rem] uppercase tracking-[0.2em] text-ruh-copper mb-2">As seen on Instagram</p>
+          <h2 className="font-heading italic text-2xl md:text-3xl text-ruh-forest">@ruh.byruhi</h2>
+          <p className="font-body font-light text-[0.75rem] text-ruh-charcoal/50 mt-2 max-w-xs mx-auto">
+            Follow our world of handcrafted heritage jewellery
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Mobile: Horizontal scroll strip — optimized for thumb swiping */}
+      <div className="md:hidden">
+        <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory px-4 pb-4 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {igPosts.map((post, i) => (
+            <motion.a
+              key={i}
+              href="https://instagram.com/ruh.byruhi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative flex-shrink-0 w-[72vw] snap-center rounded-sm overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+            >
+              <div className="aspect-[4/5] relative">
+                <img src={post.img} alt={post.caption} loading="lazy" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="w-5 h-5 rounded-full bg-ruh-forest flex items-center justify-center">
+                      <Instagram size={10} className="text-ruh-cream" />
+                    </div>
+                    <span className="font-body text-[0.6rem] font-medium text-white/90">ruh.byruhi</span>
+                  </div>
+                  <p className="font-body text-[0.7rem] text-white/80 leading-snug line-clamp-2">{post.caption}</p>
+                  <p className="font-body text-[0.55rem] text-white/50 mt-1">♥ {post.likes} likes</p>
+                </div>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+        {/* Scroll hint */}
+        <p className="text-center font-body text-[0.6rem] text-ruh-charcoal/40 mt-1">
+          Swipe to explore →
+        </p>
+      </div>
+
+      {/* Desktop: Masonry-style grid */}
+      <div className="hidden md:block max-w-[1400px] mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-4 gap-3">
+          {igPosts.map((post, i) => (
+            <motion.a
+              key={i}
+              href="https://instagram.com/ruh.byruhi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`relative overflow-hidden group ${i === 0 || i === 5 ? 'row-span-2' : ''}`}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.06 }}
+            >
+              <div className={`${i === 0 || i === 5 ? 'aspect-[3/5]' : 'aspect-square'} relative`}>
+                <img
+                  src={post.img}
+                  alt={post.caption}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-ruh-forest/0 group-hover:bg-ruh-forest/50 transition-colors duration-300 flex flex-col items-center justify-center">
+                  <Instagram size={28} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  <p className="font-body text-[0.65rem] text-white/80 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-4 text-center line-clamp-2">{post.caption}</p>
+                  <p className="font-body text-[0.55rem] text-white/50 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">♥ {post.likes}</p>
+                </div>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="text-center mt-8 md:mt-10 px-4">
+        <a
+          href="https://instagram.com/ruh.byruhi"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 border border-ruh-forest text-ruh-forest px-6 py-3 font-body text-[0.7rem] uppercase tracking-widest hover:bg-ruh-forest hover:text-ruh-cream transition-colors duration-200 min-h-[48px]"
+        >
+          <Instagram size={16} />
+          Follow @ruh.byruhi
+        </a>
       </div>
     </section>
   );
