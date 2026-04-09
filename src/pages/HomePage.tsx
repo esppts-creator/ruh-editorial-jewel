@@ -36,8 +36,7 @@ function BillboardHero() {
 
   return (
     <section
-      className="relative h-screen"
-      style={{ minHeight: "85vh" }}
+      className="relative h-[85vh] md:h-screen"
       onMouseEnter={() => { isPaused.current = true; }}
       onMouseLeave={() => { isPaused.current = false; }}
       onTouchStart={() => { isPaused.current = true; }}
@@ -60,21 +59,21 @@ function BillboardHero() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ruh-forest/75 via-transparent to-transparent" />
                 <motion.div
-                  className="absolute bottom-16 md:bottom-20 left-6 md:left-12 max-w-lg"
+                  className="absolute bottom-14 md:bottom-20 left-4 md:left-12 max-w-[85%] md:max-w-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={selectedIndex === i ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                   transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                 >
-                  <p className="font-body text-[0.65rem] uppercase tracking-[0.2em] text-ruh-gold mb-2">
+                  <p className="font-body text-[0.6rem] md:text-[0.65rem] uppercase tracking-[0.2em] text-ruh-gold mb-1.5 md:mb-2">
                     {product.collection} Collection · Limited
                   </p>
-                  <h2 className="font-heading italic text-[2.5rem] md:text-[4rem] text-ruh-cream leading-[1.1] mb-3">
+                  <h2 className="font-heading italic text-[1.8rem] md:text-[4rem] text-ruh-cream leading-[1.1] mb-2 md:mb-3">
                     {product.name}
                   </h2>
-                  <p className="font-body font-light text-[1.1rem] text-ruh-cream/85 mb-5">
+                  <p className="font-body font-light text-[0.95rem] md:text-[1.1rem] text-ruh-cream/85 mb-3 md:mb-5">
                     ₹{product.price.toLocaleString("en-IN")}
                   </p>
-                  <span className="inline-block border border-ruh-cream text-ruh-cream px-6 py-2.5 text-xs uppercase tracking-widest font-body hover:bg-ruh-cream hover:text-ruh-forest transition-colors duration-200">
+                  <span className="inline-block border border-ruh-cream text-ruh-cream px-5 md:px-6 py-2 md:py-2.5 text-[0.65rem] md:text-xs uppercase tracking-widest font-body hover:bg-ruh-cream hover:text-ruh-forest transition-colors duration-200">
                     Explore →
                   </span>
                 </motion.div>
@@ -85,9 +84,9 @@ function BillboardHero() {
       </div>
       <button onClick={scrollPrev} className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors w-8 h-8 items-center justify-center" aria-label="Previous"><ChevronLeft size={32} strokeWidth={1} /></button>
       <button onClick={scrollNext} className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors w-8 h-8 items-center justify-center" aria-label="Next"><ChevronRight size={32} strokeWidth={1} /></button>
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
         {featured.map((_, i) => (
-          <button key={i} onClick={() => emblaApi?.scrollTo(i)} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === selectedIndex ? "bg-ruh-gold" : "bg-white/30"}`} aria-label={`Slide ${i+1}`} />
+          <button key={i} onClick={() => emblaApi?.scrollTo(i)} className={`w-2 h-2 md:w-1.5 md:h-1.5 rounded-full transition-colors ${i === selectedIndex ? "bg-ruh-gold" : "bg-white/30"}`} aria-label={`Slide ${i+1}`} />
         ))}
       </div>
     </section>
@@ -139,30 +138,31 @@ function ProductGrid() {
   else if (sort === "price-high") filtered.sort((a, b) => b.price - a.price);
 
   return (
-    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16" id="products">
-      <div className="text-center mb-4">
-        <h2 className="font-heading italic text-[2.5rem] text-ruh-forest">The Adiva Collection</h2>
+    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-20 pb-12 md:pb-16" id="products">
+      <div className="text-center mb-3 md:mb-4">
+        <h2 className="font-heading italic text-[1.8rem] md:text-[2.5rem] text-ruh-forest">The Adiva Collection</h2>
       </div>
-      <p className="font-body font-light text-[0.8rem] uppercase tracking-[0.15em] text-ruh-copper text-center mb-14">
+      <p className="font-body font-light text-[0.7rem] md:text-[0.8rem] uppercase tracking-[0.15em] text-ruh-copper text-center mb-8 md:mb-14">
         Handcrafted Rings & Earrings — Limited Editions
       </p>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-10">
-        <div className="flex flex-wrap gap-2">
+      {/* Filter bar: horizontal scroll on mobile */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 md:mb-10">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
           {filters.map(f => (
             <button key={f.value} onClick={() => setFilter(f.value)}
-              className={`rounded-full px-4 py-1.5 text-xs uppercase tracking-wider font-body transition-colors min-h-[36px] ${
+              className={`rounded-full px-4 py-1.5 text-[0.65rem] md:text-xs uppercase tracking-wider font-body transition-colors min-h-[36px] whitespace-nowrap flex-shrink-0 ${
                 filter === f.value ? "bg-ruh-forest text-white" : "border border-ruh-forest text-ruh-forest bg-transparent hover:bg-ruh-forest/5"
               }`}>{f.label}</button>
           ))}
         </div>
         <select value={sort} onChange={e => setSort(e.target.value)}
-          className="font-body text-xs text-ruh-charcoal bg-transparent border border-ruh-mist px-3 py-2 min-h-[36px] focus:outline-none">
+          className="font-body text-[0.65rem] md:text-xs text-ruh-charcoal bg-transparent border border-ruh-mist px-3 py-2 min-h-[36px] focus:outline-none self-start">
           <option value="newest">Sort: Newest</option>
           <option value="price-low">Price: Low → High</option>
           <option value="price-high">Price: High → Low</option>
         </select>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
         {filtered.map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
       </div>
     </section>
@@ -174,16 +174,16 @@ function BrandStory() {
     <section className="max-w-[1400px] mx-auto">
       <div className="grid md:grid-cols-2">
         <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-          <img src="https://images.unsplash.com/photo-1515562141589-67f0d569b6fc?w=800&q=80&auto=format" alt="Artisan crafting" loading="lazy" className="w-full h-full object-cover aspect-[4/5]" />
+          <img src="https://images.unsplash.com/photo-1515562141589-67f0d569b6fc?w=800&q=80&auto=format" alt="Artisan crafting" loading="lazy" className="w-full h-[280px] md:h-full object-cover md:aspect-[4/5]" />
         </motion.div>
-        <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="bg-ruh-forest p-12 md:p-16 flex flex-col justify-center">
-          <h2 className="font-heading italic text-[2rem] text-ruh-cream mb-6">The Gond Legacy</h2>
-          <div className="space-y-4 font-body font-light text-[0.85rem] text-ruh-cream/80 leading-[1.8]">
+        <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="bg-ruh-forest px-6 py-10 md:p-16 flex flex-col justify-center">
+          <h2 className="font-heading italic text-[1.6rem] md:text-[2rem] text-ruh-cream mb-4 md:mb-6">The Gond Legacy</h2>
+          <div className="space-y-3 md:space-y-4 font-body font-light text-[0.8rem] md:text-[0.85rem] text-ruh-cream/80 leading-[1.7] md:leading-[1.8]">
             <p>For over 1,400 years, the Gond people of central India have painted their world — trees that speak, rivers that sing, birds that carry prayers.</p>
             <p>RUH translates this ancient visual language into wearable form. Every curve in our rings, every pattern on our earrings, is drawn from Gond cosmology.</p>
             <p>We work directly with tribal artisan families in Madhya Pradesh, ensuring fair wages and sustainable practices.</p>
           </div>
-          <Link to="/about" className="mt-8 inline-block border-b border-ruh-gold text-ruh-gold font-body text-[0.7rem] uppercase tracking-widest self-start hover:opacity-70 transition-opacity">Read Our Story →</Link>
+          <Link to="/about" className="mt-6 md:mt-8 inline-block border-b border-ruh-gold text-ruh-gold font-body text-[0.7rem] uppercase tracking-widest self-start hover:opacity-70 transition-opacity">Read Our Story →</Link>
         </motion.div>
       </div>
     </section>
@@ -197,9 +197,20 @@ function SocialProof() {
     { quote: "I gifted the Nilam Drops to my mother. She said it reminded her of the jewelry her grandmother wore.", name: "Roshni D.", stars: 5 },
   ];
   return (
-    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <h2 className="font-heading italic text-2xl text-ruh-forest text-center mb-12">Worn & Loved</h2>
-      <div className="grid md:grid-cols-3 gap-6">
+    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <h2 className="font-heading italic text-xl md:text-2xl text-ruh-forest text-center mb-8 md:mb-12">Worn & Loved</h2>
+      {/* Mobile: horizontal scroll, Desktop: grid */}
+      <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-3 scrollbar-hide">
+        {testimonials.map((t, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} className="bg-ruh-mist p-6 flex-shrink-0 w-[80vw] snap-center">
+            <div className="flex gap-1 mb-3">{Array.from({ length: t.stars }).map((_, j) => <Star key={j} size={12} className="fill-ruh-gold text-ruh-gold" />)}</div>
+            <p className="font-heading italic text-[0.9rem] text-ruh-charcoal leading-[1.7] mb-3">"{t.quote}"</p>
+            <p className="font-body text-[0.65rem] uppercase tracking-wider text-ruh-copper">{t.name}</p>
+            <p className="font-body text-[0.55rem] text-ruh-charcoal/50 mt-1">Verified Buyer</p>
+          </motion.div>
+        ))}
+      </div>
+      <div className="hidden md:grid md:grid-cols-3 gap-6">
         {testimonials.map((t, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} className="bg-ruh-mist p-8">
             <div className="flex gap-1 mb-4">{Array.from({ length: t.stars }).map((_, j) => <Star key={j} size={14} className="fill-ruh-gold text-ruh-gold" />)}</div>
@@ -330,15 +341,15 @@ function Newsletter() {
   const [submitted, setSubmitted] = useState(false);
   const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); if (email) setSubmitted(true); };
   return (
-    <section className="bg-ruh-forest py-20 px-6">
+    <section className="bg-ruh-forest py-14 md:py-20 px-4 md:px-6">
       <div className="max-w-[1400px] mx-auto text-center">
-        <h2 className="font-heading italic text-[2rem] text-ruh-cream mb-4">Join the Circle</h2>
-        <p className="font-body font-light text-[0.8rem] text-ruh-cream/70 max-w-[480px] mx-auto mb-8">First access to new collections, artisan stories, and exclusive drops.</p>
+        <h2 className="font-heading italic text-[1.6rem] md:text-[2rem] text-ruh-cream mb-3 md:mb-4">Join the Circle</h2>
+        <p className="font-body font-light text-[0.75rem] md:text-[0.8rem] text-ruh-cream/70 max-w-[480px] mx-auto mb-6 md:mb-8">First access to new collections, artisan stories, and exclusive drops.</p>
         {submitted ? (
-          <p className="font-heading italic text-ruh-gold text-lg">You're in. Welcome to RUH. ✦</p>
+          <p className="font-heading italic text-ruh-gold text-base md:text-lg">You're in. Welcome to RUH. ✦</p>
         ) : (
-          <form onSubmit={handleSubmit} className="flex items-end justify-center gap-4 flex-wrap">
-            <input type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required className="border-b border-ruh-gold bg-transparent text-ruh-cream placeholder:text-ruh-cream/40 font-body text-[0.85rem] py-2.5 w-[300px] focus:outline-none" />
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row items-stretch md:items-end justify-center gap-3 md:gap-4 max-w-sm md:max-w-none mx-auto">
+            <input type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required className="border-b border-ruh-gold bg-transparent text-ruh-cream placeholder:text-ruh-cream/40 font-body text-[0.85rem] py-2.5 w-full md:w-[300px] focus:outline-none" />
             <button type="submit" className="bg-ruh-gold text-ruh-forest font-body text-[0.65rem] uppercase tracking-widest px-8 py-3 hover:bg-ruh-gold/90 transition-colors min-h-[44px]">Subscribe</button>
           </form>
         )}
