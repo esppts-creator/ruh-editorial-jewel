@@ -58,18 +58,18 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             Add to Bag
           </motion.button>
         </div>
-        <div className="px-1 space-y-0.5">
-          <p className="font-body text-[0.6rem] uppercase tracking-[0.15em] text-ruh-copper">
+        <div className="px-1 py-2 space-y-0.5">
+          <p className="font-body text-[0.55rem] md:text-[0.6rem] uppercase tracking-[0.15em] text-ruh-copper">
             {product.category === "ring" ? "Ring" : "Earring"} · {product.collection}
           </p>
-          <h3 className="font-heading text-[0.95rem] font-semibold text-ruh-charcoal">{product.name}</h3>
-          <p className="font-body text-[0.7rem] text-ruh-charcoal/60">{product.metal}</p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="font-body text-[0.9rem] text-ruh-forest font-medium">
+          <h3 className="font-heading text-[0.82rem] md:text-[0.95rem] font-semibold text-ruh-charcoal leading-tight">{product.name}</h3>
+          <p className="font-body text-[0.65rem] md:text-[0.7rem] text-ruh-charcoal/60 hidden md:block">{product.metal}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="font-body text-[0.8rem] md:text-[0.9rem] text-ruh-forest font-medium">
               ₹{product.price.toLocaleString("en-IN")}
             </span>
             {product.mrp && (
-              <span className="font-body text-[0.75rem] text-ruh-charcoal/40 line-through">
+              <span className="font-body text-[0.65rem] md:text-[0.75rem] text-ruh-charcoal/40 line-through">
                 ₹{product.mrp.toLocaleString("en-IN")}
               </span>
             )}
