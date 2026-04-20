@@ -128,8 +128,14 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3 mb-6">{["PhonePe", "GPay", "Paytm"].map(n => <span key={n} className="bg-white px-3 py-2 font-body text-xs text-ruh-charcoal border border-ruh-mist">{n}</span>)}</div>
                   <p className="font-body text-[0.65rem] text-ruh-charcoal/50">100% Secure. Powered by Cashfree.</p>
                 </div>
-                <button onClick={handlePayment} className="w-full h-[52px] bg-ruh-forest text-ruh-cream font-body text-[0.75rem] uppercase tracking-[0.15em] hover:bg-ruh-forest/90 transition-colors">Generate UPI Payment Link</button>
-                <button onClick={() => setStep(0)} className="font-body text-[0.7rem] text-ruh-charcoal/50 underline mt-4 block">← Back to Shipping</button>
+                <button
+                  onClick={handlePayment}
+                  disabled={processing}
+                  className="w-full h-[52px] bg-ruh-forest text-ruh-cream font-body text-[0.75rem] uppercase tracking-[0.15em] hover:bg-ruh-forest/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {processing ? (<><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>) : (<>Pay Now ₹{grandTotal.toLocaleString("en-IN")}</>)}
+                </button>
+                <button onClick={() => setStep(0)} disabled={processing} className="font-body text-[0.7rem] text-ruh-charcoal/50 underline mt-4 block disabled:opacity-50">← Back to Shipping</button>
               </div>
             )}
           </div>
