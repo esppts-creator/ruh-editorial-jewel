@@ -3,8 +3,84 @@ import { Link, useSearchParams } from "react-router-dom";
 import { products, getFeaturedProducts } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Instagram, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Instagram, Star, CheckCircle2, XCircle, Clock, X } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/lib/cart";
+
+function PaymentStatusBanner() {
+  const [params, setParams] = useSearchParams();
+  const { clearCart } = useCart();
+  const [status, setStatus] = useState<"loading" | "PAID" | "FAILED" | "PENDING" | "ERROR" | null>(null);
+  const [message, setMessage] = useState<string>("");
+  const orderId = params.get("order_id");
+
+  useEffect(() => {
+    if (!orderId) return;
+    let cancelled = false;
+    setStatus("loading");
+    supabase.functions
+      .invoke("pg-get-order", { body: { order_id: orderId } })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || (data && data.error)) {
+          setStatus("ERROR");
+          setMessage(error?.message || data?.error || "Could not verify payment.");
+          return;
+        }
+        const s = String(data?.order_status || "").toUpperCase();
+        if (s === "PAID") {
+          setStatus("PAID");
+          setMessage("Payment Successful! Your order has been placed.");
+          clearCart();
+        } else if (s === "PENDING") {
+          setStatus("PENDING");
+          setMessage("Payment Pending. We'll update you shortly.");
+        } else {
+          setStatus("FAILED");
+          setMessage("Payment Failed. Please try again.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId, clearCart]);
+
+  if (!status) return null;
+
+  const dismiss = () => {
+    const next = new URLSearchParams(params);
+    next.delete("order_id");
+    setParams(next, { replace: true });
+    setStatus(null);
+  };
+
+  const tone =
+    status === "PAID"
+      ? "bg-ruh-forest text-ruh-cream"
+      : status === "PENDING" || status === "loading"
+      ? "bg-ruh-gold/20 text-ruh-forest border-b border-ruh-gold"
+      : "bg-red-50 text-red-800 border-b border-red-200";
+
+  const Icon =
+    status === "PAID" ? CheckCircle2 : status === "PENDING" || status === "loading" ? Clock : XCircle;
+
+  return (
+    <div className={`fixed top-[60px] md:top-[84px] left-0 right-0 z-40 ${tone}`}>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
+        <Icon size={18} className="flex-shrink-0" />
+        <p className="font-body text-xs md:text-sm flex-1">
+          {status === "loading" ? "Verifying your payment…" : message}
+        </p>
+        {status !== "loading" && (
+          <button onClick={dismiss} className="opacity-70 hover:opacity-100 flex-shrink-0" aria-label="Dismiss">
+            <X size={16} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function BillboardHero() {
   const featured = getFeaturedProducts();
@@ -361,6 +437,7 @@ function Newsletter() {
 export default function HomePage() {
   return (
     <main>
+      <PaymentStatusBanner />
       <BillboardHero />
       <TrustBar />
       <ProductGrid />
