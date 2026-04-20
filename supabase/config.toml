@@ -1,1 +1,7 @@
 project_id = "crovqcggztrtnibqevgm"
+
+[functions.pg-create-order]
+verify_jwt = false
+
+[functions.pg-get-order]
+verify_jwt = false

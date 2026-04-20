@@ -2,23 +2,65 @@ import { useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useNavigate, Navigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { getCashfree } from "@/lib/cashfree";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const steps = ["Shipping", "Payment", "Confirm"];
 
 export default function CheckoutPage() {
   const { user } = useAuth();
-  const { items, total, clearCart } = useCart();
+  const { items, total } = useCart();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({ name: "", phone: "", email: "", address1: "", address2: "", city: "", state: "", pin: "" });
+  const [processing, setProcessing] = useState(false);
 
   if (!user) return <Navigate to="/" replace />;
   if (items.length === 0) return <Navigate to="/" replace />;
 
   const shipping = total >= 999 ? 0 : 99;
+  const grandTotal = total + shipping;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleShippingSubmit = (e: React.FormEvent) => { e.preventDefault(); setStep(1); };
-  const handlePayment = () => { clearCart(); navigate("/order-confirmation"); };
+
+  const handlePayment = async () => {
+    if (processing) return;
+    setProcessing(true);
+    try {
+      const customer_id = `cust_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+      const customer_phone = (form.phone || "9999999999").replace(/\D/g, "").slice(-10) || "9999999999";
+      const return_url = `${window.location.origin}/?order_id={order_id}`;
+
+      const { data, error } = await supabase.functions.invoke("pg-create-order", {
+        body: {
+          order_amount: grandTotal,
+          order_currency: "INR",
+          customer_details: {
+            customer_id,
+            customer_phone,
+            customer_email: form.email || undefined,
+            customer_name: form.name || undefined,
+          },
+          return_url,
+        },
+      });
+
+      if (error) throw new Error(error.message || "Failed to create order");
+      if (!data?.payment_session_id) throw new Error(data?.error || "Missing payment session");
+
+      const cashfree = await getCashfree("sandbox");
+      await cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self",
+      });
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      toast.error(err?.message || "Could not start payment. Please try again.");
+      setProcessing(false);
+    }
+  };
 
   return (
     <main className="pt-[60px] md:pt-[84px] pb-20">
@@ -86,8 +128,14 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3 mb-6">{["PhonePe", "GPay", "Paytm"].map(n => <span key={n} className="bg-white px-3 py-2 font-body text-xs text-ruh-charcoal border border-ruh-mist">{n}</span>)}</div>
                   <p className="font-body text-[0.65rem] text-ruh-charcoal/50">100% Secure. Powered by Cashfree.</p>
                 </div>
-                <button onClick={handlePayment} className="w-full h-[52px] bg-ruh-forest text-ruh-cream font-body text-[0.75rem] uppercase tracking-[0.15em] hover:bg-ruh-forest/90 transition-colors">Generate UPI Payment Link</button>
-                <button onClick={() => setStep(0)} className="font-body text-[0.7rem] text-ruh-charcoal/50 underline mt-4 block">← Back to Shipping</button>
+                <button
+                  onClick={handlePayment}
+                  disabled={processing}
+                  className="w-full h-[52px] bg-ruh-forest text-ruh-cream font-body text-[0.75rem] uppercase tracking-[0.15em] hover:bg-ruh-forest/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {processing ? (<><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>) : (<>Pay Now ₹{grandTotal.toLocaleString("en-IN")}</>)}
+                </button>
+                <button onClick={() => setStep(0)} disabled={processing} className="font-body text-[0.7rem] text-ruh-charcoal/50 underline mt-4 block disabled:opacity-50">← Back to Shipping</button>
               </div>
             )}
           </div>
