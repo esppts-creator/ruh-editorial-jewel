@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useNavigate, Navigate } from "react-router-dom";
@@ -10,12 +10,23 @@ import { toast } from "sonner";
 const steps = ["Shipping", "Payment", "Confirm"];
 
 export default function CheckoutPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { items, total } = useCart();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({ name: "", phone: "", email: "", address1: "", address2: "", city: "", state: "", pin: "" });
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    if (profile || user) {
+      setForm(f => ({
+        ...f,
+        name: f.name || profile?.full_name || "",
+        email: f.email || profile?.email || user?.email || "",
+        phone: f.phone || profile?.phone || "",
+      }));
+    }
+  }, [profile, user]);
 
   if (!user) return <Navigate to="/" replace />;
   if (items.length === 0) return <Navigate to="/" replace />;
@@ -44,6 +55,21 @@ export default function CheckoutPage() {
             customer_name: form.name || undefined,
           },
           return_url,
+          shipping,
+          shipping_address: {
+            address1: form.address1,
+            address2: form.address2 || undefined,
+            city: form.city,
+            state: form.state,
+            pin: form.pin,
+          },
+          items: items.map((it) => ({
+            slug: it.product.slug,
+            name: it.product.name,
+            image: it.product.images[0],
+            unit_price: it.product.price,
+            quantity: it.quantity,
+          })),
         },
       });
 
