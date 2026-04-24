@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err) {
+  } catch (err: any) {
     console.error("pg-get-order exception:", err);
     return new Response(JSON.stringify({ error: String(err?.message || err) }), {
       status: 500,
