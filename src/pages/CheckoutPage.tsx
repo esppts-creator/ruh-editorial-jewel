@@ -44,6 +44,21 @@ export default function CheckoutPage() {
             customer_name: form.name || undefined,
           },
           return_url,
+          shipping,
+          shipping_address: {
+            address1: form.address1,
+            address2: form.address2 || undefined,
+            city: form.city,
+            state: form.state,
+            pin: form.pin,
+          },
+          items: items.map((it) => ({
+            slug: it.product.slug,
+            name: it.product.name,
+            image: it.product.images[0],
+            unit_price: it.product.price,
+            quantity: it.quantity,
+          })),
         },
       });
 
