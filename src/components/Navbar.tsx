@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Menu, X, Instagram, User as UserIcon, LogOut, Package, ShieldCheck } from "lucide-react";
+import { ShoppingBag, Menu, X, Instagram, User as UserIcon, LogOut, Package, ShieldCheck, Search } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
+import SearchOverlay from "@/components/SearchOverlay";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
   const { itemCount, openDrawer } = useCart();
   const { user, profile, isAdmin, openAuthModal, signOut } = useAuth();
@@ -48,6 +50,13 @@ export default function Navbar() {
 
             <div className="hidden md:flex items-center gap-8">
               <Link to="/about" className={`font-body text-xs tracking-[0.15em] uppercase ${textColor} hover:opacity-70 transition-all duration-200`}>About</Link>
+              <button
+                onClick={() => setSearchOpen(true)}
+                className={`${textColor} hover:opacity-70 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center`}
+                aria-label="Search products"
+              >
+                <Search size={18} strokeWidth={1.5} />
+              </button>
               <div className="relative" ref={accountRef}>
                 <button
                   onClick={() => user ? setAccountOpen(o => !o) : openAuthModal("signin")}
@@ -86,6 +95,13 @@ export default function Navbar() {
             </div>
 
             <div className="flex md:hidden items-center gap-2">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className={`${textColor} min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors duration-[250ms]`}
+                aria-label="Search products"
+              >
+                <Search size={20} strokeWidth={1.5} />
+              </button>
               <button onClick={openDrawer} className={`relative ${textColor} min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors duration-[250ms]`} aria-label="Open cart">
                 <ShoppingBag size={20} strokeWidth={1.5} />
                 {itemCount > 0 && (
@@ -127,6 +143,8 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
