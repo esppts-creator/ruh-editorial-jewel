@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Trash2, Plus, X } from "lucide-react";
+import { Loader2, Pencil, Trash2, Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 
 type Status = "pending" | "paid" | "failed" | "cancelled" | "shipped" | "delivered" | "refunded";
@@ -10,16 +10,20 @@ const STATUSES: Status[] = ["pending", "paid", "failed", "shipped", "delivered",
 
 interface Order { id: string; cashfree_order_id: string; total: number; status: Status; payment_status: string; customer_name: string; customer_email: string; customer_phone: string; shipping_city: string; shipping_state: string; created_at: string; }
 interface Product { id: string; slug: string; name: string; category: string; collection: string | null; price: number; mrp: number | null; images: string[]; stock: number; is_new: boolean; is_featured: boolean; is_active: boolean; description: string | null; metal: string | null; dimensions: string | null; weight: string | null; finish: string | null; inspiration: string | null; care: string | null; }
+interface Slide { id: string; title: string; subtitle: string | null; eyebrow: string | null; image_url: string; cta_label: string | null; cta_link: string | null; sort_order: number; is_active: boolean; }
 
 const empty: Partial<Product> = { name: "", slug: "", category: "ring", collection: "Adiva", price: 0, stock: 0, images: [], is_new: false, is_featured: false, is_active: true };
+const emptySlide: Partial<Slide> = { title: "", subtitle: "", eyebrow: "", image_url: "", cta_label: "Explore", cta_link: "/", sort_order: 0, is_active: true };
 
 export default function AdminPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
-  const [tab, setTab] = useState<"orders" | "products">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "billboard">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
+  const [editingSlide, setEditingSlide] = useState<Partial<Slide> | null>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -28,12 +32,14 @@ export default function AdminPage() {
 
   const refresh = async () => {
     setLoading(true);
-    const [{ data: o }, { data: p }] = await Promise.all([
+    const [{ data: o }, { data: p }, { data: s }] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
+      supabase.from("billboard_slides").select("*").order("sort_order", { ascending: true }),
     ]);
     setOrders((o as any) || []);
     setProducts((p as any) || []);
+    setSlides((s as any) || []);
     setLoading(false);
   };
 
@@ -64,6 +70,41 @@ export default function AdminPage() {
     if (error) toast.error(error.message); else { toast.success("Deleted"); refresh(); }
   };
 
+  const saveSlide = async () => {
+    if (!editingSlide) return;
+    const payload: any = { ...editingSlide };
+    if (!payload.title || !payload.image_url) { toast.error("Title & image URL are required"); return; }
+    payload.sort_order = Number(payload.sort_order || 0);
+    const { error } = editingSlide.id
+      ? await supabase.from("billboard_slides").update(payload).eq("id", editingSlide.id)
+      : await supabase.from("billboard_slides").insert(payload);
+    if (error) toast.error(error.message);
+    else { toast.success("Slide saved"); setEditingSlide(null); refresh(); }
+  };
+
+  const deleteSlide = async (id: string) => {
+    if (!confirm("Delete this slide?")) return;
+    const { error } = await supabase.from("billboard_slides").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Deleted"); refresh(); }
+  };
+
+  const moveSlide = async (slide: Slide, direction: -1 | 1) => {
+    const sorted = [...slides].sort((a, b) => a.sort_order - b.sort_order);
+    const idx = sorted.findIndex(s => s.id === slide.id);
+    const swap = sorted[idx + direction];
+    if (!swap) return;
+    await Promise.all([
+      supabase.from("billboard_slides").update({ sort_order: swap.sort_order }).eq("id", slide.id),
+      supabase.from("billboard_slides").update({ sort_order: slide.sort_order }).eq("id", swap.id),
+    ]);
+    refresh();
+  };
+
+  const toggleSlideActive = async (slide: Slide) => {
+    const { error } = await supabase.from("billboard_slides").update({ is_active: !slide.is_active }).eq("id", slide.id);
+    if (error) toast.error(error.message); else refresh();
+  };
+
   if (authLoading) return null;
   if (!user) return <Navigate to="/" replace />;
   if (!isAdmin) return (
@@ -77,7 +118,7 @@ export default function AdminPage() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="font-heading italic text-3xl md:text-4xl text-ruh-forest mb-6">Admin</h1>
         <div className="flex gap-2 mb-8">
-          {(["orders", "products"] as const).map(t => (
+          {(["orders", "products", "billboard"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-5 py-2 font-body text-xs uppercase tracking-[0.15em] ${tab === t ? "bg-ruh-forest text-ruh-cream" : "border border-ruh-forest text-ruh-forest"}`}>
               {t}
