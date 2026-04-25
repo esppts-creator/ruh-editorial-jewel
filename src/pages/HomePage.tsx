@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Instagram, Star, CheckCircle2, XCircle, Cloc
 import useEmblaCarousel from "embla-carousel-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
+import SmartImage from "@/components/SmartImage";
 
 function PaymentStatusBanner() {
   const [params, setParams] = useSearchParams();
@@ -156,16 +157,21 @@ function BillboardHero() {
           {slides.map((slide, i) => (
             <div key={slide.id} className="relative flex-[0_0_100%] min-w-0 h-full">
               <Link to={slide.cta_link || "/"} className="block w-full h-full">
-                <motion.img
+                <motion.div
                   key={`img-${selectedIndex === i ? "active" : "idle"}-${slide.id}`}
-                  src={slide.image_url}
-                  alt={slide.title}
-                  className="w-full h-full object-cover object-top"
-                  loading={i === 0 ? "eager" : "lazy"}
+                  className="absolute inset-0"
                   initial={{ scale: 1 }}
                   animate={selectedIndex === i ? { scale: 1.04 } : { scale: 1 }}
                   transition={{ duration: 6, ease: "easeOut" }}
-                />
+                >
+                  <SmartImage
+                    src={slide.image_url}
+                    alt={slide.title}
+                    wrapperClassName="w-full h-full"
+                    className="w-full h-full object-cover object-top"
+                    loading={i === 0 ? "eager" : "lazy"}
+                  />
+                </motion.div>
                 <div className="absolute inset-0 bg-gradient-to-t from-ruh-forest/75 via-transparent to-transparent" />
                 <motion.div
                   className="absolute bottom-14 md:bottom-20 left-4 md:left-12 max-w-[85%] md:max-w-lg"
