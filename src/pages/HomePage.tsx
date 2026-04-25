@@ -293,7 +293,12 @@ function BrandStory() {
     <section className="max-w-[1400px] mx-auto">
       <div className="grid md:grid-cols-2">
         <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-          <img src="https://images.unsplash.com/photo-1515562141589-67f0d569b6fc?w=800&q=80&auto=format" alt="Artisan crafting" loading="lazy" className="w-full h-[280px] md:h-full object-cover md:aspect-[4/5]" />
+          <SmartImage
+            src="https://images.unsplash.com/photo-1515562141589-67f0d569b6fc?w=800&q=80&auto=format"
+            alt="Artisan crafting"
+            wrapperClassName="w-full h-[280px] md:h-full md:aspect-[4/5]"
+            className="w-full h-full object-cover"
+          />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="bg-ruh-forest px-6 py-10 md:p-16 flex flex-col justify-center">
           <h2 className="font-heading italic text-[1.6rem] md:text-[2rem] text-ruh-cream mb-4 md:mb-6">The Gond Legacy</h2>
@@ -384,7 +389,12 @@ function InstagramGallery() {
               transition={{ duration: 0.4, delay: i * 0.05 }}
             >
               <div className="aspect-[4/5] relative">
-                <img src={post.img} alt={post.caption} loading="lazy" className="w-full h-full object-cover" />
+                <SmartImage
+                  src={post.img}
+                  alt={post.caption}
+                  wrapperClassName="absolute inset-0"
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="flex items-center gap-1.5 mb-1.5">
@@ -422,10 +432,10 @@ function InstagramGallery() {
               transition={{ duration: 0.5, delay: i * 0.06 }}
             >
               <div className={`${i === 0 || i === 5 ? 'aspect-[3/5]' : 'aspect-square'} relative`}>
-                <img
+                <SmartImage
                   src={post.img}
                   alt={post.caption}
-                  loading="lazy"
+                  wrapperClassName="absolute inset-0"
                   className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-ruh-forest/0 group-hover:bg-ruh-forest/50 transition-colors duration-300 flex flex-col items-center justify-center">
