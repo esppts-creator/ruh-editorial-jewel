@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      billboard_slides: {
+        Row: {
+          created_at: string
+          cta_label: string | null
+          cta_link: string | null
+          eyebrow: string | null
+          id: string
+          image_url: string
+          is_active: boolean
+          sort_order: number
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_label?: string | null
+          cta_link?: string | null
+          eyebrow?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean
+          sort_order?: number
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_label?: string | null
+          cta_link?: string | null
+          eyebrow?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          sort_order?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
