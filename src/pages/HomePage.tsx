@@ -82,12 +82,45 @@ function PaymentStatusBanner() {
   );
 }
 
+interface Slide {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  eyebrow: string | null;
+  image_url: string;
+  cta_label: string | null;
+  cta_link: string | null;
+}
+
 function BillboardHero() {
-  const featured = getFeaturedProducts();
+  const fallback: Slide[] = getFeaturedProducts().map((p) => ({
+    id: p.id,
+    title: p.name,
+    subtitle: `₹${p.price.toLocaleString("en-IN")}`,
+    eyebrow: `${p.collection} Collection · Limited`,
+    image_url: p.images[0],
+    cta_label: "Explore",
+    cta_link: `/products/${p.slug}`,
+  }));
+  const [slides, setSlides] = useState<Slide[]>(fallback);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const autoplayRef = useRef<ReturnType<typeof setInterval>>();
   const isPaused = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("billboard_slides")
+      .select("id,title,subtitle,eyebrow,image_url,cta_label,cta_link")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data && data.length) setSlides(data as Slide[]);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
@@ -120,13 +153,13 @@ function BillboardHero() {
     >
       <div className="overflow-hidden h-full" ref={emblaRef}>
         <div className="flex h-full">
-          {featured.map((product, i) => (
-            <div key={product.id} className="relative flex-[0_0_100%] min-w-0 h-full">
-              <Link to={`/products/${product.slug}`} className="block w-full h-full">
+          {slides.map((slide, i) => (
+            <div key={slide.id} className="relative flex-[0_0_100%] min-w-0 h-full">
+              <Link to={slide.cta_link || "/"} className="block w-full h-full">
                 <motion.img
-                  key={`img-${selectedIndex === i ? "active" : "idle"}-${product.id}`}
-                  src={product.images[0]}
-                  alt={product.name}
+                  key={`img-${selectedIndex === i ? "active" : "idle"}-${slide.id}`}
+                  src={slide.image_url}
+                  alt={slide.title}
                   className="w-full h-full object-cover object-top"
                   loading={i === 0 ? "eager" : "lazy"}
                   initial={{ scale: 1 }}
@@ -140,17 +173,21 @@ function BillboardHero() {
                   animate={selectedIndex === i ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                   transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                 >
-                  <p className="font-body text-[0.6rem] md:text-[0.65rem] uppercase tracking-[0.2em] text-ruh-gold mb-1.5 md:mb-2">
-                    {product.collection} Collection · Limited
-                  </p>
+                  {slide.eyebrow && (
+                    <p className="font-body text-[0.6rem] md:text-[0.65rem] uppercase tracking-[0.2em] text-ruh-gold mb-1.5 md:mb-2">
+                      {slide.eyebrow}
+                    </p>
+                  )}
                   <h2 className="font-heading italic text-[1.8rem] md:text-[4rem] text-ruh-cream leading-[1.1] mb-2 md:mb-3">
-                    {product.name}
+                    {slide.title}
                   </h2>
-                  <p className="font-body font-light text-[0.95rem] md:text-[1.1rem] text-ruh-cream/85 mb-3 md:mb-5">
-                    ₹{product.price.toLocaleString("en-IN")}
-                  </p>
+                  {slide.subtitle && (
+                    <p className="font-body font-light text-[0.95rem] md:text-[1.1rem] text-ruh-cream/85 mb-3 md:mb-5">
+                      {slide.subtitle}
+                    </p>
+                  )}
                   <span className="inline-block border border-ruh-cream text-ruh-cream px-5 md:px-6 py-2 md:py-2.5 text-[0.65rem] md:text-xs uppercase tracking-widest font-body hover:bg-ruh-cream hover:text-ruh-forest transition-colors duration-200">
-                    Explore →
+                    {slide.cta_label || "Explore"} →
                   </span>
                 </motion.div>
               </Link>
@@ -161,7 +198,7 @@ function BillboardHero() {
       <button onClick={scrollPrev} className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors w-8 h-8 items-center justify-center" aria-label="Previous"><ChevronLeft size={32} strokeWidth={1} /></button>
       <button onClick={scrollNext} className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors w-8 h-8 items-center justify-center" aria-label="Next"><ChevronRight size={32} strokeWidth={1} /></button>
       <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-        {featured.map((_, i) => (
+        {slides.map((_, i) => (
           <button key={i} onClick={() => emblaApi?.scrollTo(i)} className={`w-2 h-2 md:w-1.5 md:h-1.5 rounded-full transition-colors ${i === selectedIndex ? "bg-ruh-gold" : "bg-white/30"}`} aria-label={`Slide ${i+1}`} />
         ))}
       </div>

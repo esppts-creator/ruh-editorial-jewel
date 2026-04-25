@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Trash2, Plus, X } from "lucide-react";
+import { Loader2, Pencil, Trash2, Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 
 type Status = "pending" | "paid" | "failed" | "cancelled" | "shipped" | "delivered" | "refunded";
@@ -10,16 +10,20 @@ const STATUSES: Status[] = ["pending", "paid", "failed", "shipped", "delivered",
 
 interface Order { id: string; cashfree_order_id: string; total: number; status: Status; payment_status: string; customer_name: string; customer_email: string; customer_phone: string; shipping_city: string; shipping_state: string; created_at: string; }
 interface Product { id: string; slug: string; name: string; category: string; collection: string | null; price: number; mrp: number | null; images: string[]; stock: number; is_new: boolean; is_featured: boolean; is_active: boolean; description: string | null; metal: string | null; dimensions: string | null; weight: string | null; finish: string | null; inspiration: string | null; care: string | null; }
+interface Slide { id: string; title: string; subtitle: string | null; eyebrow: string | null; image_url: string; cta_label: string | null; cta_link: string | null; sort_order: number; is_active: boolean; }
 
 const empty: Partial<Product> = { name: "", slug: "", category: "ring", collection: "Adiva", price: 0, stock: 0, images: [], is_new: false, is_featured: false, is_active: true };
+const emptySlide: Partial<Slide> = { title: "", subtitle: "", eyebrow: "", image_url: "", cta_label: "Explore", cta_link: "/", sort_order: 0, is_active: true };
 
 export default function AdminPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
-  const [tab, setTab] = useState<"orders" | "products">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "billboard">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
+  const [editingSlide, setEditingSlide] = useState<Partial<Slide> | null>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -28,12 +32,14 @@ export default function AdminPage() {
 
   const refresh = async () => {
     setLoading(true);
-    const [{ data: o }, { data: p }] = await Promise.all([
+    const [{ data: o }, { data: p }, { data: s }] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
+      supabase.from("billboard_slides").select("*").order("sort_order", { ascending: true }),
     ]);
     setOrders((o as any) || []);
     setProducts((p as any) || []);
+    setSlides((s as any) || []);
     setLoading(false);
   };
 
@@ -64,6 +70,41 @@ export default function AdminPage() {
     if (error) toast.error(error.message); else { toast.success("Deleted"); refresh(); }
   };
 
+  const saveSlide = async () => {
+    if (!editingSlide) return;
+    const payload: any = { ...editingSlide };
+    if (!payload.title || !payload.image_url) { toast.error("Title & image URL are required"); return; }
+    payload.sort_order = Number(payload.sort_order || 0);
+    const { error } = editingSlide.id
+      ? await supabase.from("billboard_slides").update(payload).eq("id", editingSlide.id)
+      : await supabase.from("billboard_slides").insert(payload);
+    if (error) toast.error(error.message);
+    else { toast.success("Slide saved"); setEditingSlide(null); refresh(); }
+  };
+
+  const deleteSlide = async (id: string) => {
+    if (!confirm("Delete this slide?")) return;
+    const { error } = await supabase.from("billboard_slides").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Deleted"); refresh(); }
+  };
+
+  const moveSlide = async (slide: Slide, direction: -1 | 1) => {
+    const sorted = [...slides].sort((a, b) => a.sort_order - b.sort_order);
+    const idx = sorted.findIndex(s => s.id === slide.id);
+    const swap = sorted[idx + direction];
+    if (!swap) return;
+    await Promise.all([
+      supabase.from("billboard_slides").update({ sort_order: swap.sort_order }).eq("id", slide.id),
+      supabase.from("billboard_slides").update({ sort_order: slide.sort_order }).eq("id", swap.id),
+    ]);
+    refresh();
+  };
+
+  const toggleSlideActive = async (slide: Slide) => {
+    const { error } = await supabase.from("billboard_slides").update({ is_active: !slide.is_active }).eq("id", slide.id);
+    if (error) toast.error(error.message); else refresh();
+  };
+
   if (authLoading) return null;
   if (!user) return <Navigate to="/" replace />;
   if (!isAdmin) return (
@@ -77,7 +118,7 @@ export default function AdminPage() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="font-heading italic text-3xl md:text-4xl text-ruh-forest mb-6">Admin</h1>
         <div className="flex gap-2 mb-8">
-          {(["orders", "products"] as const).map(t => (
+          {(["orders", "products", "billboard"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-5 py-2 font-body text-xs uppercase tracking-[0.15em] ${tab === t ? "bg-ruh-forest text-ruh-cream" : "border border-ruh-forest text-ruh-forest"}`}>
               {t}
@@ -117,7 +158,7 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-          ) : (
+          ) : tab === "products" ? (
             <div>
               <div className="flex justify-end mb-4">
                 <button onClick={() => setEditing({ ...empty })} className="flex items-center gap-2 px-4 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider"><Plus size={14} /> New Product</button>
@@ -142,6 +183,47 @@ export default function AdminPage() {
                           <div className="flex gap-1">
                             <button onClick={() => setEditing({ ...p, images: (p.images || []).join("\n") as any })} className="p-1.5 hover:bg-ruh-mist/50" aria-label="Edit"><Pencil size={14} /></button>
                             <button onClick={() => deleteProduct(p.id)} className="p-1.5 hover:bg-red-50 text-red-600" aria-label="Delete"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="flex justify-end mb-4">
+                <button onClick={() => setEditingSlide({ ...emptySlide, sort_order: (slides[slides.length - 1]?.sort_order || 0) + 1 })} className="flex items-center gap-2 px-4 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider"><Plus size={14} /> New Slide</button>
+              </div>
+              <div className="bg-white border border-ruh-mist overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-ruh-mist/40">
+                    <tr className="font-body text-[0.65rem] uppercase tracking-wider text-ruh-charcoal/60">
+                      <th className="px-4 py-3">Order</th><th className="px-4 py-3">Image</th><th className="px-4 py-3">Title</th><th className="px-4 py-3">Link</th><th className="px-4 py-3">Active</th><th className="px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slides.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center font-body text-sm text-ruh-charcoal/50">No slides yet — add one to control the homepage hero.</td></tr>}
+                    {slides.map((s, i) => (
+                      <tr key={s.id} className="border-t border-ruh-mist text-sm">
+                        <td className="px-4 py-3 font-body text-xs text-ruh-charcoal/70">
+                          <div className="flex items-center gap-1">
+                            <span className="w-6">{s.sort_order}</span>
+                            <button onClick={() => moveSlide(s, -1)} disabled={i === 0} className="p-1 disabled:opacity-30 hover:bg-ruh-mist/50" aria-label="Move up"><ArrowUp size={12} /></button>
+                            <button onClick={() => moveSlide(s, 1)} disabled={i === slides.length - 1} className="p-1 disabled:opacity-30 hover:bg-ruh-mist/50" aria-label="Move down"><ArrowDown size={12} /></button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2"><img src={s.image_url} alt="" className="w-14 h-10 object-cover bg-ruh-mist" /></td>
+                        <td className="px-4 py-3 font-body text-ruh-charcoal">{s.title}<div className="text-[0.65rem] text-ruh-charcoal/50">{s.eyebrow}</div></td>
+                        <td className="px-4 py-3 font-body text-xs text-ruh-charcoal/70 truncate max-w-[200px]">{s.cta_link}</td>
+                        <td className="px-4 py-3">
+                          <button onClick={() => toggleSlideActive(s)} className={`px-2 py-0.5 text-[0.6rem] uppercase tracking-wider ${s.is_active ? "bg-ruh-forest text-ruh-cream" : "border border-ruh-mist text-ruh-charcoal/60"}`}>{s.is_active ? "Live" : "Hidden"}</button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            <button onClick={() => setEditingSlide({ ...s })} className="p-1.5 hover:bg-ruh-mist/50" aria-label="Edit"><Pencil size={14} /></button>
+                            <button onClick={() => deleteSlide(s.id)} className="p-1.5 hover:bg-red-50 text-red-600" aria-label="Delete"><Trash2 size={14} /></button>
                           </div>
                         </td>
                       </tr>
@@ -204,6 +286,56 @@ export default function AdminPage() {
             <div className="flex justify-end gap-2 mt-6">
               <button onClick={() => setEditing(null)} className="px-5 py-2 border border-ruh-mist font-body text-xs uppercase tracking-wider">Cancel</button>
               <button onClick={saveProduct} className="px-5 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingSlide && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setEditingSlide(null)}>
+          <div className="bg-white p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-heading italic text-xl text-ruh-forest">{editingSlide.id ? "Edit Slide" : "New Slide"}</h3>
+              <button onClick={() => setEditingSlide(null)}><X size={20} /></button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block text-xs md:col-span-2">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Title *</span>
+                <input value={editingSlide.title ?? ""} onChange={e => setEditingSlide({ ...editingSlide, title: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Eyebrow</span>
+                <input value={editingSlide.eyebrow ?? ""} onChange={e => setEditingSlide({ ...editingSlide, eyebrow: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="Adiva Collection · Limited" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Subtitle (price/tagline)</span>
+                <input value={editingSlide.subtitle ?? ""} onChange={e => setEditingSlide({ ...editingSlide, subtitle: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="₹2,840" />
+              </label>
+              <label className="block text-xs md:col-span-2">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Image URL *</span>
+                <input value={editingSlide.image_url ?? ""} onChange={e => setEditingSlide({ ...editingSlide, image_url: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="https://…" />
+                {editingSlide.image_url && <img src={editingSlide.image_url} alt="" className="mt-2 w-full max-h-48 object-cover bg-ruh-mist" />}
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">CTA label</span>
+                <input value={editingSlide.cta_label ?? ""} onChange={e => setEditingSlide({ ...editingSlide, cta_label: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="Explore" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">CTA link</span>
+                <input value={editingSlide.cta_link ?? ""} onChange={e => setEditingSlide({ ...editingSlide, cta_link: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="/products/adiva-forest-ring" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Sort order</span>
+                <input type="number" value={editingSlide.sort_order ?? 0} onChange={e => setEditingSlide({ ...editingSlide, sort_order: Number(e.target.value) })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" />
+              </label>
+              <label className="flex items-center gap-2 font-body text-xs mt-6">
+                <input type="checkbox" checked={!!editingSlide.is_active} onChange={e => setEditingSlide({ ...editingSlide, is_active: e.target.checked })} />
+                Active (show on homepage)
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button onClick={() => setEditingSlide(null)} className="px-5 py-2 border border-ruh-mist font-body text-xs uppercase tracking-wider">Cancel</button>
+              <button onClick={saveSlide} className="px-5 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider">Save</button>
             </div>
           </div>
         </div>
