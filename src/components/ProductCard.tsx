@@ -3,6 +3,7 @@ import { Product } from "@/lib/products";
 import { useCart } from "@/lib/cart";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import SmartImage from "@/components/SmartImage";
 
 interface ProductCardProps {
   product: Product;
@@ -30,11 +31,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
     >
       <Link to={`/products/${product.slug}`} className="group block">
-        <div className="relative overflow-hidden aspect-[3/4] mb-3">
-          <img
+        <div className="relative mb-3">
+          <SmartImage
             src={product.images[0]}
             alt={product.name}
-            loading="lazy"
+            wrapperClassName="aspect-[3/4]"
             width={400}
             height={533}
             className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
