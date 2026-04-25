@@ -158,7 +158,7 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-          ) : (
+          ) : tab === "products" ? (
             <div>
               <div className="flex justify-end mb-4">
                 <button onClick={() => setEditing({ ...empty })} className="flex items-center gap-2 px-4 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider"><Plus size={14} /> New Product</button>
@@ -183,6 +183,47 @@ export default function AdminPage() {
                           <div className="flex gap-1">
                             <button onClick={() => setEditing({ ...p, images: (p.images || []).join("\n") as any })} className="p-1.5 hover:bg-ruh-mist/50" aria-label="Edit"><Pencil size={14} /></button>
                             <button onClick={() => deleteProduct(p.id)} className="p-1.5 hover:bg-red-50 text-red-600" aria-label="Delete"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="flex justify-end mb-4">
+                <button onClick={() => setEditingSlide({ ...emptySlide, sort_order: (slides[slides.length - 1]?.sort_order || 0) + 1 })} className="flex items-center gap-2 px-4 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider"><Plus size={14} /> New Slide</button>
+              </div>
+              <div className="bg-white border border-ruh-mist overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-ruh-mist/40">
+                    <tr className="font-body text-[0.65rem] uppercase tracking-wider text-ruh-charcoal/60">
+                      <th className="px-4 py-3">Order</th><th className="px-4 py-3">Image</th><th className="px-4 py-3">Title</th><th className="px-4 py-3">Link</th><th className="px-4 py-3">Active</th><th className="px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slides.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center font-body text-sm text-ruh-charcoal/50">No slides yet — add one to control the homepage hero.</td></tr>}
+                    {slides.map((s, i) => (
+                      <tr key={s.id} className="border-t border-ruh-mist text-sm">
+                        <td className="px-4 py-3 font-body text-xs text-ruh-charcoal/70">
+                          <div className="flex items-center gap-1">
+                            <span className="w-6">{s.sort_order}</span>
+                            <button onClick={() => moveSlide(s, -1)} disabled={i === 0} className="p-1 disabled:opacity-30 hover:bg-ruh-mist/50" aria-label="Move up"><ArrowUp size={12} /></button>
+                            <button onClick={() => moveSlide(s, 1)} disabled={i === slides.length - 1} className="p-1 disabled:opacity-30 hover:bg-ruh-mist/50" aria-label="Move down"><ArrowDown size={12} /></button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2"><img src={s.image_url} alt="" className="w-14 h-10 object-cover bg-ruh-mist" /></td>
+                        <td className="px-4 py-3 font-body text-ruh-charcoal">{s.title}<div className="text-[0.65rem] text-ruh-charcoal/50">{s.eyebrow}</div></td>
+                        <td className="px-4 py-3 font-body text-xs text-ruh-charcoal/70 truncate max-w-[200px]">{s.cta_link}</td>
+                        <td className="px-4 py-3">
+                          <button onClick={() => toggleSlideActive(s)} className={`px-2 py-0.5 text-[0.6rem] uppercase tracking-wider ${s.is_active ? "bg-ruh-forest text-ruh-cream" : "border border-ruh-mist text-ruh-charcoal/60"}`}>{s.is_active ? "Live" : "Hidden"}</button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            <button onClick={() => setEditingSlide({ ...s })} className="p-1.5 hover:bg-ruh-mist/50" aria-label="Edit"><Pencil size={14} /></button>
+                            <button onClick={() => deleteSlide(s.id)} className="p-1.5 hover:bg-red-50 text-red-600" aria-label="Delete"><Trash2 size={14} /></button>
                           </div>
                         </td>
                       </tr>
@@ -245,6 +286,56 @@ export default function AdminPage() {
             <div className="flex justify-end gap-2 mt-6">
               <button onClick={() => setEditing(null)} className="px-5 py-2 border border-ruh-mist font-body text-xs uppercase tracking-wider">Cancel</button>
               <button onClick={saveProduct} className="px-5 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingSlide && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setEditingSlide(null)}>
+          <div className="bg-white p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-heading italic text-xl text-ruh-forest">{editingSlide.id ? "Edit Slide" : "New Slide"}</h3>
+              <button onClick={() => setEditingSlide(null)}><X size={20} /></button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block text-xs md:col-span-2">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Title *</span>
+                <input value={editingSlide.title ?? ""} onChange={e => setEditingSlide({ ...editingSlide, title: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Eyebrow</span>
+                <input value={editingSlide.eyebrow ?? ""} onChange={e => setEditingSlide({ ...editingSlide, eyebrow: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="Adiva Collection · Limited" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Subtitle (price/tagline)</span>
+                <input value={editingSlide.subtitle ?? ""} onChange={e => setEditingSlide({ ...editingSlide, subtitle: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="₹2,840" />
+              </label>
+              <label className="block text-xs md:col-span-2">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Image URL *</span>
+                <input value={editingSlide.image_url ?? ""} onChange={e => setEditingSlide({ ...editingSlide, image_url: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="https://…" />
+                {editingSlide.image_url && <img src={editingSlide.image_url} alt="" className="mt-2 w-full max-h-48 object-cover bg-ruh-mist" />}
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">CTA label</span>
+                <input value={editingSlide.cta_label ?? ""} onChange={e => setEditingSlide({ ...editingSlide, cta_label: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="Explore" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">CTA link</span>
+                <input value={editingSlide.cta_link ?? ""} onChange={e => setEditingSlide({ ...editingSlide, cta_link: e.target.value })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" placeholder="/products/adiva-forest-ring" />
+              </label>
+              <label className="block text-xs">
+                <span className="font-body uppercase tracking-wider text-ruh-charcoal/60 text-[0.65rem]">Sort order</span>
+                <input type="number" value={editingSlide.sort_order ?? 0} onChange={e => setEditingSlide({ ...editingSlide, sort_order: Number(e.target.value) })} className="w-full border border-ruh-mist px-3 py-2 mt-1 font-body text-sm focus:outline-none focus:border-ruh-forest" />
+              </label>
+              <label className="flex items-center gap-2 font-body text-xs mt-6">
+                <input type="checkbox" checked={!!editingSlide.is_active} onChange={e => setEditingSlide({ ...editingSlide, is_active: e.target.checked })} />
+                Active (show on homepage)
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button onClick={() => setEditingSlide(null)} className="px-5 py-2 border border-ruh-mist font-body text-xs uppercase tracking-wider">Cancel</button>
+              <button onClick={saveSlide} className="px-5 py-2 bg-ruh-forest text-ruh-cream font-body text-xs uppercase tracking-wider">Save</button>
             </div>
           </div>
         </div>
